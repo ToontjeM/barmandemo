@@ -102,6 +102,60 @@ red 20250127T161910 - R - Mon Jan 27 15:19:18 2025 - Size: 74.2 MiB - WAL Size: 
 
 - `barman restore --target-time "2025-01-21 10:00:00" red  DESTINATION_PATH`
 
+- `psql -h red -p 5444 -U enterprisedb -c "DROP DATABASE demo_db;" edb`
+
+- `barman show-backup red latest`
+```
+[barman@barman ~]$ barman show-backup red latest
+Backup 20250227T103040:
+  Server Name            : red
+  System Id              : 7464612433885959675
+  Status                 : DONE
+  PostgreSQL Version     : 160006
+  PGDATA directory       : /opt/postgres/data
+  Estimated Cluster Size : 248.5 MiB
+
+  Server information:
+    Checksums            : on
+
+  Base backup information:
+    Backup Method        : rsync-concurrent
+    Backup Size          : 45.4 MiB (45.4 MiB with WALs)
+    WAL Size             : 41.9 KiB
+    Resources saved      : 215.7 MiB (86.81%)
+    Timeline             : 1
+    Begin WAL            : 000000010000000000000070
+    End WAL              : 000000010000000000000070
+    WAL number           : 1
+    WAL compression ratio: 99.74%
+    Begin time           : 2025-02-27 09:30:41.086704+00:00
+    End time             : 2025-02-27 09:34:09.391747+00:00
+    Copy time            : 8 seconds + 4 seconds startup
+    Estimated throughput : 5.1 MiB/s
+    Begin Offset         : 40
+    End Offset           : 81416
+    Begin LSN            : 0/70000028
+    End LSN              : 0/70013E08
+
+  WAL information:
+    No of files          : 0
+    Disk usage           : 0 B
+    Last available       : 000000010000000000000070
+
+  Catalog information:
+    Retention Policy     : VALID
+    Previous Backup      : 20250226T040006
+    Next Backup          : - (this is the latest base backup)
+```
+- `barman recover red latest /var/lib/edb/as17/data --target-time "YYYY-MM-DD HH:MM:SS"`
+
+- `psql -h red -p 5444 -U enterprisedb -c "SELECT COUNT(*) FROM test_table;" edb` 
+
+- `psql -h red -p 5444 -U enterprisedb -c "INSERT INTO test_table VALUES (generate_series(1,100));" edb`
+
+- `barman switch-wal --force red`
+
+
 ## Demo tear down
 - `99-deprovision.sh`
 
