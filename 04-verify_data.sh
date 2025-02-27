@@ -1,3 +1,3 @@
 #!/bin/bash
 
-psql -d demo_db -U postgres -c "SELECT COUNT(*) FROM test_table;"
+psql -h red -p 5444 -U enterprisedb -c "SELECT COUNT(*) FROM test_table;" edb

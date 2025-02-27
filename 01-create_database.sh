@@ -1,3 +1,3 @@
 #!/bin/bash
 
-psql -h pg -U postgres -c "CREATE DATABASE demo_db;"
+psql -h red -p 5444 -U enterprisedb -c "CREATE DATABASE demo_db;" edb
