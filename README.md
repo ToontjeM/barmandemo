@@ -1,4 +1,4 @@
-# Barman demo
+# Barman demo (WIP)
 In this demo we are showing how [Barman](https://pgbarman.org/) can be used to do the following:
 - Make continous backup of a PostgreSQL database.
 - Perform a Pint-In-time restore of a PostgreSQL database.
@@ -103,5 +103,6 @@ red 20250127T161910 - R - Mon Jan 27 15:19:18 2025 - Size: 74.2 MiB - WAL Size: 
 - `barman restore --target-time "2025-01-21 10:00:00" red  DESTINATION_PATH`
 
 ## Demo tear down
+- `99-deprovision.sh`
 
 Kf6l#ZH@b98Nd*511wCH@#uxxsrvgopm
