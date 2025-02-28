@@ -1,3 +1,6 @@
 #!/bin/bash
 
-psql -h red -p 5444 -U enterprisedb -c "DROP DATABASE demo_db;" edb
+. ./config/config.sh
+
+printf "${G}*** De-provisioning VM's ***${N}\n"
+vagrant destroy -f
