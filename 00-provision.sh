@@ -4,3 +4,4 @@
 
 printf "${G}*** Provisioning new VM's ***${N}\n"
 vagrant up --provision
+. scripts/copy_ssh_keys.sh
