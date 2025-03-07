@@ -190,11 +190,17 @@ pghost 20250306T162722 - F - Thu Mar  6 16:27:23 2025 - Size: 22.3 MiB - WAL Siz
   ```
   Shutdown Database
 
+  /usr/pgsql-17/bin/pg_ctl --pgdata=/var/lib/pgsql/17/data stop
+
   waiting for server to shut down.... done
   server stopped
   Backup and remove broken database
 
+  cp -a /var/lib/pgsql/17/data /var/lib/pgsql/17/old_data && rm -rf /var/lib/pgsql/17/data/*
+
   Recover last backup
+
+  barman recover --remote-ssh-command 'ssh postgres@pghost' pghost latest /var/lib/pgsql/17/data
 
   Starting remote restore for server pghost using backup 20250307T084612
   Destination directory: /var/lib/pgsql/17/data
@@ -207,6 +213,8 @@ pghost 20250306T162722 - F - Thu Mar  6 16:27:23 2025 - Size: 22.3 MiB - WAL Siz
   Restore operation completed (start time: 2025-03-07 08:51:25.157405+00:00, elapsed time: 5 seconds)
   Your PostgreSQL server has been successfully prepared for recovery!
   Start database
+
+  /usr/pgsql-17/bin/pg_ctl --pgdata=/var/lib/pgsql/17/data -l /var/lib/pgsql/17/data/log/pg.log start
 
   waiting for server to start.... done
   server started
