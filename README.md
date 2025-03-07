@@ -52,6 +52,7 @@ SELECT COUNT(*) FROM test_table;
 - `sudo su - barman`
 - `cd /vagrant`
 - `04-barman_check-pghost.sh`
+
   ```
   Server pghost:
         PostgreSQL: OK
@@ -76,8 +77,10 @@ SELECT COUNT(*) FROM test_table;
         pg_receivexlog compatible: OK
         receive-wal running: OK
         archiver errors: OK
-```
+  ```
+
 - `05-barmanhost_backup_pghost.sh`
+
   ```
   barman backup pghost --wait
 
