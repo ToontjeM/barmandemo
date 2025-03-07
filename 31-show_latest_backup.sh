@@ -1,1 +1,0 @@
-sudo - barman barman show-backup pg latest

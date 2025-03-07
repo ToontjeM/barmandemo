@@ -9,10 +9,11 @@ echo "--- Running updates ---"
 dnf update && dnf upgrade -y
 sudo systemctl stop firewalld.service
 sudo systemctl disable firewalld.service
+sudo setenforce 0
 sudo sed -i 's/^%wheel  ALL=(ALL)       ALL/%wheel  ALL=(ALL)       NOPASSWD:ALL/' /etc/sudoers
 
 echo "--- Installing Postgres 17 ---"
-sudo dnf -y install postgresql17-server postgresql17-contrib rsync sshpass
+sudo dnf -y install postgresql17-server postgresql17-contrib
 sudo /usr/pgsql-17/bin/postgresql-17-setup initdb
 
 # Enable and start PostgreSQL
@@ -25,25 +26,21 @@ sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
 
 # Create a replication user for Barman
 echo "Creating replication user for Barman..."
-sudo -u postgres psql -c "CREATE ROLE barman WITH REPLICATION LOGIN PASSWORD 'barman';"
+sudo su - postgres -c "createuser --superuser --replication barman"
+sudo su - postgres -c "createuser --replication streaming_barman"
+sudo -u postgres psql -c "ALTER ROLE barman WITH REPLICATION LOGIN PASSWORD 'barman';"
+sudo -u postgres psql -c "ALTER ROLE streaming_barman WITH REPLICATION LOGIN PASSWORD 'barman';"
+
+# Create demo database
+sudo -u postgres psql -c "CREATE DATABASE demo_db;"
 
 # Configure PostgreSQL for remote access
 echo "Configuring PostgreSQL..."
 sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /var/lib/pgsql/17/data/postgresql.conf
 
-# Enable WAL archiving and streaming replication
-cat <<EOF | sudo tee -a /var/lib/pgsql/17/data/postgresql.conf
-wal_level = replica
-archive_mode = on
-archive_command = 'rsync -a %p barman@backup:/var/lib/barman/pg1/incoming/%f'
-max_wal_senders = 3
-wal_keep_size = 256MB
-hot_standby = on
-EOF
-
 # Allow Barman to connect for replication and streaming
 cat <<EOF | sudo tee -a /var/lib/pgsql/17/data/pg_hba.conf
-host replication barman barman-server md5
+host replication streaming_barman all md5
 host all all 0.0.0.0/0 md5
 EOF
 

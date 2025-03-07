@@ -9,38 +9,46 @@ echo "--- Running updates ---"
 dnf update && dnf upgrade -y
 sudo systemctl stop firewalld.service
 sudo systemctl disable firewalld.service
+sudo setenforce 0
 sudo sed -i 's/^%wheel  ALL=(ALL)       ALL/%wheel  ALL=(ALL)       NOPASSWD:ALL/' /etc/sudoers
 
 echo "--- Installing barman---"
-sudo dnf -y install barman barman-cli rsync postgresql17-contrib rsync sshpass
-
-echo "--- Installing barman service---"
-sudo tee /etc/systemd/system/barman.service <<EOF
-[Unit]
-Description=Barman backup service
-After=network.target postgresql.service
-
-[Service]
-Type=simple
-User=barman
-Group=barman
-ExecStart=/bin/barman receive-wal --wait
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-EOF
+sudo dnf -y install barman barman-cli postgresql17-contrib rsync
 
 # Create Barman directories
 sudo usermod -aG wheel barman
 sudo mkdir -p /var/lib/barman
 sudo chown barman:barman /var/lib/barman
 sudo tee /var/lib/barman/.pgpass > /dev/null <<EOL
-pg1:5432:postgres:barman:barman
-pg2:5432:postgres:barman:barman
+pghost:5432:*:barman:barman
+pghost:5432:replication:streaming_barman:barman
 EOL
 sudo chmod 600 /var/lib/barman/.pgpass
 sudo chown barman:barman /var/lib/barman/.pgpass
+sudo tee /var/lib/barman/.bash_profile >/dev/null <<EOL
+# ~/.bashrc
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+    . /etc/bashrc
+fi
+
+# User-specific environment and startup programs
+
+# Set PATH to include custom bin directory
+export PATH="/usr/pgsql-17/bin/:$HOME/bin:$PATH"
+
+# Alias definitions
+alias ll='ls -lah'
+alias grep='grep --color=auto'
+
+# Enable color support for ls
+if [ -x /usr/bin/dircolors ]; then
+    eval "$(dircolors -b)"
+fi
+EOL
+
+sudo chown barman:barman /var/lib/barman/.bash_profile
 
 # Configure Barman for streaming and WAL archiving
 echo "Configuring Barman..."
@@ -48,27 +56,20 @@ sudo tee /etc/barman.conf > /dev/null <<EOL
 [barman]
 barman_user = barman
 barman_home = /var/lib/barman
+path_prefix = /usr/pgsql-17/bin
 configuration_files_directory = /etc/barman.d
 log_file = /var/log/barman/barman.log
 compression = gzip
 EOL
 
-sudo touch /etc/barman.d/pg1.conf 
-sudo tee /etc/barman.d/pg1.conf > /dev/null <<EOL
-[pg1]
+sudo touch /etc/barman.d/pghost.conf 
+sudo tee /etc/barman.d/pghost.conf > /dev/null <<EOL
+[pghost]
 description = "Primary PostgreSQL Server"
-conninfo = host=pg1 user=barman password=barman dbname=postgres
+conninfo = host=pghost user=barman password=barman dbname=demo_db
+streaming_conninfo = host=pghost user=streaming_barman password=barman
 backup_method = postgres
-streaming_conninfo = host=pg1 user=barman password=barman
 streaming_archiver = on
 slot_name = barman
+create_slot = auto
 EOL
-
-# Restart Barman
-sudo systemctl restart barman
-sudo systemctl status barman
-
-# Perform initial check
-barman check pg1
-
-echo "Barman installation with WAL streaming configuration completed!"
