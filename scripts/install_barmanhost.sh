@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /vagrant_config/config.sh
+. /config/config.sh
 
 echo "--- Configuring repo with repo token ${EDB_SUBSCRIPTION_TOKEN} ---"
 curl -1sLf "https://downloads.enterprisedb.com/${EDB_SUBSCRIPTION_TOKEN}/enterprise/setup.rpm.sh" | sudo -E bash

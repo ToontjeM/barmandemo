@@ -4,7 +4,12 @@ In this demo we are showing how [Barman](https://pgbarman.org/) can be used to d
 - Perform a Point-In-time restore of a PostgreSQL database.
 - Performa full recovery of a PostgreSQL database.
 
-This demo uses.....
+### Pre-requisites
+To deploy this demo the following software needs to be installed in the PC from which you are going to deploy the demo:
+- VirtualBox (https://www.virtualbox.org/)
+- Vagrant (https://www.vagrantup.com/) with `vagrant-hosts` and `vagrant-reload` plug-ins.
+- A file called `.edb_subscription_token` with your EDB repository 2.0 token in your $HOME/token directory. 
+This token can be found in your EDB account profile here: https://www.enterprisedb.com/accounts/profile
 
 ## Demo setup
 2 VM's
@@ -12,12 +17,46 @@ This demo uses.....
 - barmanhost (Backup server running barman)
 
 ### Installation
-`00-provision.sh`
+You can provision the demo environment by running `00-provision.sh`
 
-### Check
+This will provision two VM's:
+
+| hostname |  IP  | Postgres version | user/password | Database |
+| -------- | ---- | ---------------- | ------------- | -------- |
+| pghost   | 192.168.56.11 | PostgreSQL 17 | postgres/postgres | postgres |
+|          |               |               | barman/barman     | demo_db  |
+| barmanhost | 192.168.56.13 |             | barman/barman     |          |
+
+At the end of provisioning you will see something similar to:
+```
+Server pghost:
+        PostgreSQL: OK
+        superuser or standard user with backup privileges: OK
+        PostgreSQL streaming: OK
+        wal_level: OK
+        replication slot: OK
+        directories: OK
+        retention policy settings: OK
+        backup maximum age: OK (no last_backup_maximum_age provided)
+        backup minimum size: OK (0 B)
+        wal maximum age: OK (no last_wal_maximum_age provided)
+        wal size: OK (0 B)
+        compression settings: OK
+        failed backups: OK (there are 0 failed backups)
+        minimum redundancy requirements: OK (have 0 non-incremental backups, expected at least 0)
+        pg_basebackup: OK
+        pg_basebackup compatible: OK
+        pg_basebackup supports tablespaces mapping: OK
+        systemid coherence: OK (no system Id stored on disk)
+        pg_receivexlog: OK
+        pg_receivexlog compatible: OK
+        receive-wal running: OK
+        archiver errors: OK
+```
+Open two terminal panes, one connected to the pghost using `vagrant ssh pghost` and one connected to the barmanhost using `vagrant ssh barmanhost`.
 
 ## Demo flow
-**PGHOST**
+** On PGHOST**
 - `sudo su - postgres`
 - `cd /vagrant`
 
@@ -48,7 +87,7 @@ SELECT COUNT(*) FROM test_table;
 (1 row)
 ```
 
-**BARMANHOST**
+**On BARMANHOST**
 - `sudo su - barman`
 - `cd /vagrant`
 - `04-barman_check-pghost.sh`
