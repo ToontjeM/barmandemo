@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# Token
-if [ -f "/tokens/edb_subscription_token" ]; then   # Running inside a VM
-  export EDB_SUBSCRIPTION_TOKEN=(`cat /tokens/edb_subscription_token`)
+#!/bin/bash
+
+if [ -f "/tokens/edb_subscription_token" ]; then
+  read -r EDB_SUBSCRIPTION_TOKEN < /tokens/edb_subscription_token
+else
+  read -r EDB_SUBSCRIPTION_TOKEN < "$HOME/.tokens/edb_subscription_token"
 fi
 
-
+export EDB_SUBSCRIPTION_TOKEN
