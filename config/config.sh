@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 if [ -f "/tokens/edb_subscription_token" ]; then
   read -r EDB_SUBSCRIPTION_TOKEN < /tokens/edb_subscription_token
 else
